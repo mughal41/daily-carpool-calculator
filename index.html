@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Pirr Shakka Pick & Drop • PKR</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+    <style>
+        :root {
+            --emerald: 161 94% 45%;
+            --emerald-bg: 161 94% 15%;
+            --bg: 222 47% 2%;
+            --card: 222 47% 5%;
+            --border: 217 33% 12%;
+            --text: 210 40% 98%;
+            --dim: 215 15% 65%;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: hsl(var(--bg));
+            color: hsl(var(--text));
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        h1,
+        h2,
+        h3,
+        .font-heading {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .glass-surface {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+            backdrop-filter: blur(24px);
+            border: 1px solid hsl(var(--border));
+        }
+
+        .metro-node {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: hsl(var(--border));
+            position: relative;
+            z-index: 10;
+        }
+
+        .metro-line {
+            height: 2px;
+            background: hsl(var(--border));
+            flex: 1;
+            margin: 0 4px;
+        }
+
+        .route-card {
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            cursor: pointer;
+            border-color: transparent;
+        }
+
+        .route-card.active {
+            background: hsla(var(--emerald), 0.1);
+            border-color: hsla(var(--emerald), 0.4);
+            transform: translateY(-2px);
+        }
+
+        .passenger-pill {
+            transition: all 0.2s;
+        }
+
+        .passenger-pill.active {
+            background: hsl(var(--emerald));
+            color: hsl(var(--bg));
+            transform: scale(1.1);
+            box-shadow: 0 0 20px hsla(var(--emerald), 0.4);
+        }
+
+        .animate-in {
+            animation: zoomFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+
+        @keyframes zoomFade {
+            from {
+                transform: scale(0.95);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .receipt-glow {
+            box-shadow: 0 0 100px -20px hsla(var(--emerald), 0.2);
+        }
+
+        .node-label {
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-top: 6px;
+            color: hsl(var(--dim));
+            white-space: nowrap;
+            transition: color 0.3s;
+        }
+
+        .route-card.active .node-label {
+            color: hsl(var(--emerald));
+        }
+
+        .tab-indicator {
+            height: 3px;
+            background: hsl(var(--emerald));
+            transition: all 0.4s ease;
+        }
+
+        .highlight-focus {
+            box-shadow: 0 0 40px -10px hsla(var(--emerald), 0.3);
+            border-color: hsla(var(--emerald), 0.4) !important;
+        }
+
+        /* Hide Spinners */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none !important;
+            display: none !important;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield !important;
+            appearance: none !important;
+            -webkit-appearance: none !important;
+        }
+        #fuelIn, #avgIn {
+            appearance: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: textfield !important;
+        }
+    </style>
+</head>
+
+<body class="selection:bg-emerald-500/30">
+
+    <div class="max-w-4xl mx-auto px-5 py-10 md:py-20 lg:px-10">
+
+        <!-- Hero Header -->
+        <header class="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 mb-16 animate-in">
+            <div class="flex items-center gap-6">
+                <div
+                    class="w-16 h-16 bg-emerald-500 rounded-[2rem] flex items-center justify-center text-3xl shadow-2xl shadow-emerald-500/30 transform rotate-6">
+                    🚗
+                </div>
+                <div>
+                    <h1 class="text-4xl font-extrabold tracking-tight">Pirr Shakka Pick & Drop</h1>
+                    <p class="text-emerald-500/60 font-bold uppercase tracking-widest text-[10px] mt-1">Kahuta Network •
+                        Daily Share</p>
+                </div>
+            </div>
+            <div class="bg-white/5 border border-white/5 rounded-3xl p-4 flex items-center gap-4">
+                <div id="liveClock" class="text-xl font-bold font-heading w-20">00:00</div>
+                <div class="h-6 w-[1px] bg-white/10"></div>
+                <div class="text-[9px] font-black uppercase text-slate-500 leading-tight">Secure Cloud<br>Sync Active
+                </div>
+            </div>
+        </header>
+
+        <main class="space-y-16">
+
+            <!-- Summary Dashboard -->
+            <section id="summary" class="animate-in" style="animation-delay: 0.1s">
+                <div class="glass-surface rounded-[2.5rem] p-8 md:p-12 receipt-glow relative overflow-hidden">
+                    <div class="absolute -top-20 -right-20 w-64 h-64 bg-emerald-500/10 blur-[80px] rounded-full"></div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                        <div>
+                            <div class="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500/60 mb-3">Fare
+                                Preview</div>
+                            <h2 id="grandShare" class="text-7xl font-extrabold tracking-tighter mb-2">Rs. 0</h2>
+                            <div class="flex items-center gap-3">
+                                <span id="paxCount"
+                                    class="bg-white/5 px-3 py-1 rounded-full text-[10px] font-bold text-slate-400">0
+                                    PASSENGERS</span>
+                                <span id="distTotal"
+                                    class="text-[10px] font-bold text-slate-500 tracking-widest uppercase">0.0 KM
+                                    TOTAL</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div class="flex justify-between items-end border-b border-white/5 pb-4">
+                                <div>
+                                    <div class="text-[9px] font-black text-slate-500 uppercase mb-1">Morning Leg</div>
+                                    <div id="mornName" class="text-sm font-bold text-slate-300">Not selected</div>
+                                </div>
+                                <div id="mornDist" class="text-xs font-bold text-emerald-500">0 km</div>
+                            </div>
+                            <div class="flex justify-between items-end border-b border-white/5 pb-4">
+                                <div>
+                                    <div class="text-[9px] font-black text-slate-500 uppercase mb-1">Evening Leg</div>
+                                    <div id="evenName" class="text-sm font-bold text-slate-300">Not selected</div>
+                                </div>
+                                <div id="evenDist" class="text-xs font-bold text-emerald-500">0 km</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-12 flex flex-wrap gap-4">
+                        <button onclick="copyTicket()"
+                            class="flex-1 py-4 bg-emerald-500 hover:bg-emerald-400 text-bg font-black rounded-2xl transition-all shadow-xl shadow-emerald-500/20 active:scale-95 text-xs uppercase tracking-widest">
+                            Share Ticket
+                        </button>
+                        <button onclick="viewHistory()"
+                            class="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/5 text-slate-300 font-bold rounded-2xl transition-all text-xs uppercase tracking-widest">
+                            Logs
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main Selection Area -->
+            <section class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+
+                <!-- Morning Panel -->
+                <div class="lg:col-span-1 space-y-6 animate-in" style="animation-delay: 0.2s">
+                    <div class="flex items-center justify-between px-2">
+                        <h3 class="text-xs font-black uppercase tracking-[0.2em] text-slate-500">🌅 Morning Path</h3>
+                        <span class="text-[9px] font-bold text-emerald-500/40">STEP 01</span>
+                    </div>
+                    <div id="morningGrid" class="flex flex-col gap-4 max-h-[500px] overflow-y-auto pr-2 scrollbar-hide">
+                        <!-- Dynamic -->
+                    </div>
+                </div>
+
+                <!-- Evening Panel -->
+                <div class="lg:col-span-1 space-y-6 animate-in" style="animation-delay: 0.3s">
+                    <div class="flex items-center justify-between px-2">
+                        <h3 class="text-xs font-black uppercase tracking-[0.2em] text-slate-500">🌙 Evening Path</h3>
+                        <span class="text-[9px] font-bold text-emerald-500/40">STEP 02</span>
+                    </div>
+                    <div id="eveningGrid" class="flex flex-col gap-4 max-h-[500px] overflow-y-auto pr-2 scrollbar-hide">
+                        <!-- Dynamic -->
+                    </div>
+                </div>
+
+                <!-- Controls Panel -->
+                <div class="lg:col-span-1 space-y-8 animate-in" style="animation-delay: 0.4s">
+                    <div class="flex items-center justify-between px-2">
+                        <h3 class="text-xs font-black uppercase tracking-[0.2em] text-slate-500">⚙️ Settings</h3>
+                        <span class="text-[9px] font-bold text-emerald-500/40">STEP 03</span>
+                    </div>
+
+                    <div class="glass-surface p-8 rounded-[2rem] space-y-10">
+                        <!-- Passengers -->
+                        <div>
+                            <label
+                                class="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-6 px-1">Passengers
+                                (Riders)</label>
+                            <div class="flex gap-4">
+                                <button onclick="setPax(2)" id="pax-2"
+                                    class="passenger-pill w-14 h-14 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center font-bold text-lg">2</button>
+                                <button onclick="setPax(3)" id="pax-3"
+                                    class="passenger-pill w-14 h-14 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center font-bold text-lg">3</button>
+                                <button onclick="setPax(4)" id="pax-4"
+                                    class="passenger-pill w-14 h-14 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center font-bold text-lg active">4</button>
+                                <button onclick="setPax(5)" id="pax-5"
+                                    class="passenger-pill w-14 h-14 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center font-bold text-lg">5</button>
+                            </div>
+                        </div>
+
+                        <!-- Fuel -->
+                        <div class="space-y-6">
+                            <div>
+                                <label
+                                    class="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-3 px-1">Fuel
+                                    Price (PKR)</label>
+                                <div class="relative">
+                                    <input type="number" id="fuelIn" value="321" oninput="runCalc()"
+                                        onkeydown="handleKey(event, 'avgIn')"
+                                        class="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-6 pr-16 text-xl font-bold focus:outline-none focus:border-emerald-500/50 transition-colors">
+                                    <span
+                                        class="absolute right-6 top-1/2 -translate-y-1/2 text-[9px] font-black text-emerald-500">PKR/L</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-3 px-1">Vehicle
+                                    Consumption</label>
+                                <div class="relative">
+                                    <input type="number" id="avgIn" value="12" step="0.1" oninput="runCalc()"
+                                        onkeydown="handleKey(event, 'summary')"
+                                        class="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-6 pr-16 text-xl font-bold focus:outline-none focus:border-emerald-500/50 transition-colors">
+                                    <span
+                                        class="absolute right-6 top-1/2 -translate-y-1/2 text-[9px] font-black text-emerald-500">KM/L</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Premium Receipt Overlay -->
+        <div id="receiptUI"
+            class="fixed inset-0 z-50 bg-[#020617] bg-opacity-95 backdrop-blur-2xl flex flex-col items-center justify-start overflow-y-auto scrollbar-hide p-6 py-10 hidden">
+            <div class="max-w-sm w-full space-y-6">
+                <!-- Capture Container (Only this is saved as image) -->
+                <div id="receiptAnchor" style="background-color: #0f172a; border: 1px solid rgba(255,255,255,0.1);"
+                    class="w-full rounded-[2.5rem] overflow-hidden shadow-2xl relative">
+                    <!-- Top Section: Header -->
+                    <div class="p-8 pb-4 text-center border-b border-dashed border-white/10 relative">
+                        <div class="flex justify-between items-center mb-6 opacity-40">
+                            <span class="text-[8px] font-black tracking-widest uppercase">Pirr Shakka Pick & Drop •
+                                Ticket</span>
+                            <span id="recID"
+                                class="text-[8px] font-black tracking-widest text-emerald-500">CD-8241</span>
+                        </div>
+                        <div class="text-4xl mb-4">🎫</div>
+                        <h3 class="text-2xl font-black font-heading tracking-tight" style="color: #f8fafc;">Trip Ticket
+                        </h3>
+                        <p id="receiptDate" style="color: #10b981; opacity: 0.6;"
+                            class="text-[10px] font-black uppercase tracking-[0.3em] font-heading">---</p>
+
+                        <!-- Decorative Cutouts on the dashed line -->
+                        <div class="absolute -left-3 -bottom-3 w-6 h-6 bg-[#020617] rounded-full"></div>
+                        <div class="absolute -right-3 -bottom-3 w-6 h-6 bg-[#020617] rounded-full"></div>
+                    </div>
+
+                    <!-- Mid Section: Route Info -->
+                    <div class="p-6 md:p-8 pt-6 md:pt-10 space-y-4 md:space-y-8">
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-end">
+                                <div>
+                                    <div style="color: #64748b;"
+                                        class="text-[8px] font-black uppercase tracking-widest mb-1">Morning Departure
+                                    </div>
+                                    <div id="recMorn" style="color: #f8fafc;" class="text-md font-black font-heading">
+                                        ---</div>
+                                </div>
+                                <div class="text-right">
+                                    <div style="color: #64748b;"
+                                        class="text-[8px] font-black uppercase tracking-widest mb-1">Status</div>
+                                    <div class="text-[10px] font-black text-emerald-500 uppercase">Confirmed</div>
+                                </div>
+                            </div>
+                            <div id="recMornStops" style="color: #64748b;"
+                                class="text-[9px] leading-relaxed uppercase font-black">---</div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-end">
+                                <div>
+                                    <div style="color: #64748b;"
+                                        class="text-[8px] font-black uppercase tracking-widest mb-1">Evening Return
+                                    </div>
+                                    <div id="recEven" style="color: #f8fafc;" class="text-md font-black font-heading">
+                                        ---</div>
+                                </div>
+                                <div class="text-right">
+                                    <div style="color: #64748b;"
+                                        class="text-[8px] font-black uppercase tracking-widest mb-1">Fare Type</div>
+                                    <div class="text-[10px] font-black text-emerald-500 uppercase tracking-tighter">
+                                        Shared Pool</div>
+                                </div>
+                            </div>
+                            <div id="recEvenStops" style="color: #64748b;"
+                                class="text-[9px] leading-relaxed uppercase font-black">---</div>
+                        </div>
+
+                        <!-- Lower Section: Metrics -->
+                        <div
+                            class="grid grid-cols-2 gap-px bg-white/5 border border-white/5 rounded-2xl overflow-hidden mt-4">
+                            <div class="p-4 bg-[#0f172a]">
+                                <div style="color: #64748b;" class="text-[8px] font-black uppercase mb-1">Total Distance
+                                </div>
+                                <div style="color: #cbd5e1;" class="text-sm font-black font-heading"><span
+                                        id="recDist">0.0</span> <span class="text-[9px]">KM</span></div>
+                            </div>
+                            <div class="p-4 bg-[#0f172a]">
+                                <div style="color: #64748b;" class="text-[8px] font-black uppercase mb-1">Rider Pool
+                                </div>
+                                <div style="color: #cbd5e1;" class="text-sm font-black font-heading"><span
+                                        id="recPax">0</span> <span class="text-[9px]">PAX</span></div>
+                            </div>
+                        </div>
+
+                        <div class="bg-emerald-500/10 p-5 rounded-2xl border border-emerald-500/20 text-center">
+                            <div style="color: #10b981;" class="text-[9px] font-black uppercase tracking-[0.4em] mb-2">
+                                Individual Share</div>
+                            <div style="color: #34d399;" class="text-3xl font-black font-heading tracking-tighter">Rs.
+                                <span id="recFare">0</span>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Section: Decorative Barcode -->
+                        <div class="pt-4 flex flex-col items-center opacity-30">
+                            <div id="barcodeContainer" class="w-full h-8 flex gap-1 mb-2">
+                                <!-- Generated in JS -->
+                            </div>
+                            <span class="text-[8px] font-mono tracking-[1em] text-white/50">TICKET-VERIFIED-PKR</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons (Outside Capture Zone) -->
+                <div class="flex gap-4">
+                    <button onclick="downloadReceipt()" style="background-color: #10b981; color: #020617;"
+                        class="flex-1 py-5 rounded-[1.5rem] font-black text-xs uppercase tracking-widest hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-emerald-500/20">
+                        Download PNG
+                    </button>
+                    <button onclick="closeReceipt()" style="background-color: rgba(255,255,255,0.05); color: #cbd5e1;"
+                        class="px-8 py-5 rounded-[1.5rem] font-black text-md uppercase tracking-widest border border-white/5 hover:bg-white/10 transition-colors">
+                        ✕
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DATA = {
+            m: [
+                { id: 'm1', n: 'Route 1', p: ['Kahuta', 'Bitech', 'FSS', 'MWAN'], d: 49.3 },
+                { id: 'm2', n: 'Route 2', p: ['Kahuta', 'MWAN'], d: 32.0 },
+                { id: 'm3', n: 'Route 3', p: ['Kahuta', 'MWAN', 'Bitech', 'FSS'], d: 48.7 },
+                { id: 'm4', n: 'Route 4', p: ['Kahuta', 'MWAN', 'Bitech'], d: 41.0 },
+                { id: 'm5', n: 'Route 5', p: ['Kahuta', 'Bitech', 'MWAN'], d: 43.0 },
+                { id: 'm6', n: 'Route 6', p: ['Kahuta', 'FSS', 'MWAN'], d: 40.0 },
+                { id: 'm7', n: 'Route 7', p: ['Kahuta', 'Bitech'], d: 33.6 },
+                { id: 'm8', n: 'Route 8', p: ['Kahuta', 'FSS'], d: 32.6 },
+                { id: 'm9', n: 'Route 9', p: ['Kahuta', 'Bitech', 'FSS'], d: 41.3 }
+            ],
+            e: [
+                { id: 'e1', n: 'Route 1', p: ['MWAN', 'FSS', 'Kahuta'], d: 42.5 },
+                { id: 'e2', n: 'Route 2', p: ['MWAN', 'Bitech', 'FSS', 'Kahuta'], d: 50.5 },
+                { id: 'e3', n: 'Route 3', p: ['MWAN', 'Bitech', 'Kahuta'], d: 44.5 },
+                { id: 'e4', n: 'Route 4', p: ['MWAN', 'Kahuta'], d: 30.5 },
+                { id: 'e5', n: 'Route 5', p: ['MWAN', 'Kalisto', 'Kahuta'], d: 36.1 },
+                { id: 'e6', n: 'Route 6', p: ['Bitech', 'Kahuta'], d: 35.8 },
+                { id: 'e7', n: 'Route 7', p: ['FSS', 'Bitech', 'MWAN', 'Kahuta'], d: 49.3 },
+                { id: 'e8', n: 'Route 8', p: ['FSS', 'Bitech', 'Kahuta'], d: 44.6 },
+                { id: 'e9', n: 'Route 9', p: ['FSS', 'Kahuta'], d: 33.9 }
+            ]
+        };
+
+        let state = {
+            m: null,
+            e: null,
+            pax: 4,
+            history: JSON.parse(localStorage.getItem('dash_history') || '[]'),
+            fuel: parseFloat(localStorage.getItem('dash_fuel')) || 321,
+            avg: parseFloat(localStorage.getItem('dash_avg')) || 12
+        };
+
+        function start() {
+            document.getElementById('fuelIn').value = state.fuel;
+            document.getElementById('avgIn').value = state.avg;
+            render();
+            setPax(4);
+            updateTime();
+            setInterval(updateTime, 1000);
+        }
+
+        function updateTime() {
+            document.getElementById('liveClock').innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function render() {
+            ['morning', 'evening'].forEach(type => {
+                const key = type[0];
+                const div = document.getElementById(`${type}Grid`);
+                div.innerHTML = DATA[key].map(r => `
+                <div onclick="select('${r.id}', '${key}')" id="${r.id}" 
+                    class="route-card glass-surface p-5 rounded-3xl border border-white/5 hover:bg-white/5">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-xs font-bold text-slate-300">${r.n}</span>
+                        <span class="text-[10px] font-black text-emerald-500">${r.d}km</span>
+                    </div>
+                    <div class="flex items-center">
+                        ${r.p.map((node, i) => `
+                            ${i > 0 ? '<div class="metro-line"></div>' : ''}
+                            <div class="flex flex-col items-center">
+                                <div class="metro-node"></div>
+                                <span class="node-label">${node}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+            });
+        }
+
+        function select(id, type) {
+            DATA[type].forEach(r => {
+                const el = document.getElementById(r.id);
+                if (el) el.classList.remove('active', 'highlight-focus');
+            });
+
+            const selectedEl = document.getElementById(id);
+            selectedEl.classList.add('active');
+            state[type] = DATA[type].find(r => r.id === id);
+            runCalc();
+
+            // Smart Focus Flow
+            if (type === 'm') {
+                document.getElementById('eveningGrid').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                document.getElementById('eveningGrid').parentElement.classList.add('highlight-focus');
+                setTimeout(() => document.getElementById('eveningGrid').parentElement.classList.remove('highlight-focus'), 1000);
+            } else {
+                document.getElementById('pax-2').parentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                document.getElementById('pax-2').parentElement.parentElement.classList.add('highlight-focus');
+                setTimeout(() => document.getElementById('pax-2').parentElement.parentElement.classList.remove('highlight-focus'), 1000);
+            }
+        }
+
+        function setPax(n) {
+            [2, 3, 4, 5].forEach(i => document.getElementById(`pax-${i}`).classList.remove('active'));
+            document.getElementById(`pax-${n}`).classList.add('active');
+            state.pax = n;
+            runCalc();
+
+            // Next Step: Fuel
+            if (n !== 4 || state.m) { // Only scroll if user is interacting
+                document.getElementById('fuelIn').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                document.getElementById('fuelIn').focus();
+            }
+        }
+
+        function runCalc() {
+            const rawFuel = document.getElementById('fuelIn').value;
+            const rawAvg = document.getElementById('avgIn').value;
+
+            // Use default only if empty, allow 0
+            const fuelPrice = rawFuel === "" ? 321 : (parseFloat(rawFuel) || 0);
+            const fuelAvg = rawAvg === "" ? 12 : (parseFloat(rawAvg) || 12);
+            
+            localStorage.setItem('dash_fuel', fuelPrice);
+            localStorage.setItem('dash_avg', fuelAvg);
+
+            if (!state.m || !state.e) return;
+
+            const totalDist = state.m.d + state.e.d;
+            const totalCost = (totalDist / fuelAvg) * fuelPrice;
+            const perPax = Math.round(totalCost / state.pax);
+
+            // Update Dashboard
+            document.getElementById('grandShare').innerText = `Rs. ${perPax}`;
+            document.getElementById('paxCount').innerText = `${state.pax} PASSENGERS`;
+            document.getElementById('distTotal').innerText = `${totalDist.toFixed(1)} KM TOTAL`;
+
+            document.getElementById('mornName').innerText = state.m.n;
+            document.getElementById('mornDist').innerText = `${state.m.d} km`;
+            document.getElementById('evenName').innerText = state.e.n;
+            document.getElementById('evenDist').innerText = `${state.e.d} km`;
+
+            // Update Receipt Values
+            document.getElementById('recMorn').innerText = state.m.n;
+            document.getElementById('recEven').innerText = state.e.n;
+            document.getElementById('recMornStops').innerText = state.m.p.join(' • ');
+            document.getElementById('recEvenStops').innerText = state.e.p.join(' • ');
+            document.getElementById('recDist').innerText = totalDist.toFixed(1);
+            document.getElementById('recPax').innerText = state.pax;
+            document.getElementById('recFare').innerText = perPax;
+            document.getElementById('receiptDate').innerText = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+            // Highlight Grand Share if everything is selected (Calculation only)
+            if (state.m && state.e) {
+                document.getElementById('summary').classList.add('highlight-focus');
+                setTimeout(() => document.getElementById('summary').classList.remove('highlight-focus'), 2000);
+            }
+        }
+
+        function handleKey(e, nextId) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const next = document.getElementById(nextId);
+                if (next) {
+                    next.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    if (next.tagName === 'INPUT') next.focus();
+                } else if (nextId === 'summary') {
+                    document.getElementById('summary').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        }
+
+        function copyTicket() {
+            if (!state.m || !state.e) { alert("Select routes first!"); return; }
+            document.getElementById('receiptUI').classList.remove('hidden');
+
+            // Random Ticket Ref & Barcode
+            document.getElementById('recID').innerText = `CD-${Math.floor(1000 + Math.random() * 9000)}`;
+            document.getElementById('barcodeContainer').innerHTML = Array(35).fill(0).map(() =>
+                `<div class="bg-white/50 h-full flex-1" style="width: ${Math.floor(Math.random() * 3 + 1)}px"></div>`
+            ).join('');
+
+            // Full Timestamp
+            const now = new Date();
+            document.getElementById('receiptDate').innerText = now.toLocaleString('en-US', {
+                month: 'long', day: 'numeric', year: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            });
+
+            // Also save to history
+            const entry = {
+                date: new Date().toISOString(),
+                m: state.m.n,
+                e: state.e.n,
+                fare: document.getElementById('recFare').innerText
+            };
+            state.history.unshift(entry);
+            state.history = state.history.slice(0, 10);
+            localStorage.setItem('dash_history', JSON.stringify(state.history));
+        }
+
+        async function downloadReceipt() {
+            const btn = event.currentTarget;
+            const originalText = btn.innerText;
+            btn.innerText = "Generating...";
+            btn.disabled = true;
+
+            try {
+                const anchor = document.getElementById('receiptAnchor');
+                const dataUrl = await htmlToImage.toPng(anchor, {
+                    backgroundColor: '#0f172a',
+                    pixelRatio: 3,
+                    skipAutoScale: true,
+                    cacheBust: true
+                });
+
+                const link = document.createElement('a');
+                link.download = `Commute_Dash_Ticket_${Date.now()}.png`;
+                link.href = dataUrl;
+                link.click();
+            } catch (err) {
+                console.error("Download failed:", err);
+                alert("Download failed. Please try again or take a screenshot.");
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function closeReceipt() {
+            document.getElementById('receiptUI').classList.add('hidden');
+        }
+
+        function viewHistory() {
+            if (document.getElementById('logsUI')) return;
+            // Simple Logs Overlay
+            const logsContainer = document.createElement('div');
+            logsContainer.id = 'logsUI';
+            logsContainer.className = 'fixed inset-0 z-[60] bg-slate-950/90 backdrop-blur-xl flex items-end md:items-center justify-center p-0 md:p-6';
+            logsContainer.innerHTML = `
+            <div class="w-full max-w-lg bg-slate-900 rounded-t-[2.5rem] md:rounded-[2.5rem] border-t md:border border-white/10 p-8 shadow-2xl animate-in">
+                <div class="flex justify-between items-center mb-8">
+                    <h3 class="text-xl font-bold font-heading">Recent Commutes</h3>
+                    <button onclick="document.getElementById('logsUI').remove()" class="text-slate-500 hover:text-white">✕</button>
+                </div>
+                <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2 scrollbar-hide">
+                    ${state.history.length ? state.history.map(h => `
+                        <div class="p-5 rounded-2xl bg-white/5 border border-white/5 flex justify-between items-center">
+                            <div>
+                                <div class="text-[8px] font-black text-emerald-500 uppercase">${new Date(h.date).toLocaleDateString()}</div>
+                                <div class="text-xs font-bold text-slate-300">${h.m} ↔ ${h.e}</div>
+                            </div>
+                            <div class="text-sm font-black text-emerald-400">Rs. ${h.fare}</div>
+                        </div>
+                    `).join('') : '<div class="text-center py-10 text-slate-600 text-xs font-bold">No history yet</div>'}
+                </div>
+                <button onclick="clearHistory()" class="w-full mt-8 py-4 text-[9px] font-black text-slate-500 uppercase tracking-widest hover:text-red-400 transition-colors">Clear All History</button>
+            </div>
+        `;
+            document.body.appendChild(logsContainer);
+        }
+
+        function clearHistory() {
+            if (confirm("Clear all logs?")) {
+                state.history = [];
+                localStorage.removeItem('dash_history');
+                document.getElementById('logsUI').remove();
+            }
+        }
+
+        window.onload = start;
+    </script>
+</body>
+
+</html>
